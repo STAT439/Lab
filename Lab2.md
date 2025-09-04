@@ -40,8 +40,8 @@ model these outcomes.
 
 ##### 2.3 Given the Dirichlet prior distribution specified in Q2.2 and the collected data, what are the posterior means for the model parameters? (4 points)
 
-##### 2.3 Construct 95% uncertainty intervals for each of the parameters. Hint: we can take samples using `rdirichlet` from `MCMCpack` and summarize those samples to construct uncertainty intervals. (4 points)
+##### 2.4 Construct 95% uncertainty intervals for each of the parameters. Hint: we can take samples using `rdirichlet` from `MCMCpack` and summarize those samples to construct uncertainty intervals. (4 points)
 
-##### 2.4 Do you think it is likely that we are using fair dice (equal probability of rolling any number)? Why or why not? (2 points)
+##### 2.5 Do you think it is likely that we are using fair dice (equal probability of rolling any number)? Why or why not? (2 points)
 
-##### 2.5 What are the MLE estimates of the parameters in the model? (2 points)
+##### 2.6 What are the MLE estimates of the parameters in the model? (2 points)
