@@ -1,6 +1,6 @@
 ---
 title: "Lab 4"
-format: pdf
+format: gfm
 editor: source
 editor_options: 
   chunk_output_type: console
@@ -54,7 +54,7 @@ Use a $\chi^2$ test to separately determine whether there seems to be unusual co
 
 #### 6.2 (4 points)
 
-Write a paragraph describing the results from 1.1 in the context of the scientific research question.
+Write a paragraph describing the results from 6.1 in the context of the scientific research question.
 
 #### 7. (6 points)
 

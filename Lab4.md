@@ -58,7 +58,7 @@ age classes. Summarize your findings.
 
 #### 6.2 (4 points)
 
-Write a paragraph describing the results from 1.1 in the context of the
+Write a paragraph describing the results from 6.1 in the context of the
 scientific research question.
 
 #### 7. (6 points)
