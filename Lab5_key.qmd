@@ -1,0 +1,145 @@
+---
+title: "Lab 5: Key"
+format: pdf
+editor: source
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| include: false
+library(knitr)
+library(tidyverse)
+library(arm)
+set.seed(09242025)
+```
+
+
+#### Part 1. Logistic Regression with a categorical predictor
+
+Following the thread from the activity on Tuesday, we will consider a case where we have a binary outcome and a categorical predictor with three levels.
+
+There are two formulations of this model, the first is known as the reference case model. In this formulation the $\beta$ coefficients correspond to differences from the reference case class.
+
+\begin{align*}
+y & \sim Bernoulli(\pi) \\
+\pi & = \frac{\exp(\beta_0 + \beta_1 I_{x =1} + \beta_2 I_{x =2})}{1 + \exp(\beta_0 + \beta_1 I_{x =1}+ \beta_2 I_{x =2})}\\
+\pi & = logit^{-1}(\beta_0 + \beta_1 I_{x =1}+ \beta_2 I_{x =2})\\
+\end{align*}
+
+The second is the cell means model which can more directly estimate probabilities associated with each class.
+
+\begin{align*}
+y & \sim Bernoulli(\pi) \\
+\pi & = \frac{\exp(\beta_0 I_{x = 0}+ \beta_1 I_{x = 1} + \beta_2 I_{x =2})}{1 + \exp(\beta_0 I_{x = 0}+ \beta_1 I_{x =1}+ \beta_2 I_{x =2})}\\
+\
+\pi & = logit^{-1}(\beta_0 I_{x = 0} + \beta_1 I_{x =1}+ \beta_2 I_{x =2})\\
+\end{align*}
+
+
+
+### 1. Data Simulation (6 points)
+
+Use the cell means model and simulate data with the following properties
+
+- Let there be a total of 150 observations, 50 from `x = "1"`, 50 from $x = ``2"$, and 50 from $x = ``3"$.
+
+```{r}
+n <- 50
+x <- rep(c('1','2','3'), each = n)
+```
+
+
+- Set the coefficient values to the following values:$\beta_0$ = 0, $\beta_1 = 1$, and $\beta_2 = -1$.
+
+```{r}
+beta <- c(0, 1, -1)
+```
+
+- Simulate a binary outcome at each x value. 
+
+```{r}
+pi_values <- invlogit(rep(beta, each = n))
+y_values <- rbinom(n * 3, 1, pi_values)
+```
+
+- Create a plot that displays the pi values along with observed binary responses.
+
+```{r}
+tibble(x = x, pi = pi_values, y = y_values) |>
+  ggplot(aes(y = y, x=x, color = x)) +
+  geom_jitter(height = .02, alpha = .5) +
+  theme_bw() +
+  theme(legend.position = 'none') +
+  annotate("segment", x = .6, xend = 1.4, y = pi_values[1], yend = pi_values[1], colour = "red") +
+  annotate("segment", x = 1.6, xend = 2.4, y = pi_values[51], yend = pi_values[51], colour = "green") +
+  annotate("segment", x = 2.6, xend = 3.4, y = pi_values[101], yend = pi_values[101], colour = "blue") +
+  scale_color_manual(values = c("1" = "red", "2" = "green", "3" = "blue"))
+
+```
+
+### 2. Contingency Table (6 points)
+
+Using your simulated data, print a contingency table and determine whether you'd detect any association between the two variables (binary outcome and categorical predictor).
+
+```{r}
+cont_table <-  tibble(x = x, pi = pi_values, y = y_values) |>
+  group_by(x) |>
+  summarize(ones = sum(y ==1), zeros = sum(y ==0)) 
+
+cont_table |>
+  kable()
+
+chisq.test(cont_table[,-1])
+
+```
+
+
+### 3. Model fitting (6 points)
+
+Fit your data using either an MLE or Bayesian approach, report point estimates and uncertainty intervals for the beta values. Hint, you can get the cell means coding with `y ~ x - 1`
+
+```{r}
+log_data <- tibble(x = x, pi = pi_values, y = y_values) 
+
+model.fit <- glm(y ~ x - 1, data = log_data, family = binomial)
+summary(model.fit)
+confint(model.fit)
+```
+
+### 4. Probability Scale (6 points)
+
+With this model framework, we can also directly estimate uncertainty intervals for the probabilities using $\pi = logit^{-1}(\beta)$. Compute uncertainty intervals for the probability of success for each class and add them to an updated version of the figure from part 1.
+
+```{r}
+probs <- invlogit(confint(model.fit))
+tibble(x = x, pi = pi_values, y = y_values) |>
+  ggplot(aes(y = y, x=x, color = x)) +
+  geom_jitter(height = .02, alpha = .5) +
+  theme_bw() +
+  theme(legend.position = 'none') +
+  annotate("segment", x = .6, xend = 1.4, y = pi_values[1], yend = pi_values[1], colour = "red") +
+  annotate("segment", x = .6, xend = 1.4, y = probs[1,1], yend = probs[1,1], colour = "red", lty = 2) +
+  annotate("segment", x = .6, xend = 1.4, y = probs[1,2], yend = probs[1,2], colour = "red", lty = 2) +
+  annotate("segment", x = 1.6, xend = 2.4, y = pi_values[51], yend = pi_values[51], colour = "green") +
+  annotate("segment", x = 1.6, xend = 2.4, y = probs[2,1], yend = probs[2,1], colour = "green", lty = 2) +
+  annotate("segment", x = 1.6, xend = 2.4, y = probs[2,2], yend = probs[2,2], colour = "green", lty = 2) +
+  annotate("segment", x = 2.6, xend = 3.4, y = pi_values[101], yend = pi_values[101], colour = "blue") +
+  annotate("segment", x = 2.6, xend = 3.4, y = probs[3,1], yend = probs[3,1], colour = "blue", lty = 2) +
+  annotate("segment", x = 2.6, xend = 3.4, y = probs[3,2], yend = probs[3,2], colour = "blue", lty = 2) +
+  scale_color_manual(values = c("1" = "red", "2" = "green", "3" = "blue"))
+
+```
+
+
+### 5. Alternative Models (6 points)
+
+Why do the two models below give you incorrect results?
+
+```{r}
+#| eval: false
+model.fit <- glm(y ~ as.numeric(x) - 1, data = log_data, family = binomial)
+model.fit <- glm(y ~ x - 1, data = log_data)
+
+```
+
