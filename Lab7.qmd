@@ -1,0 +1,95 @@
+---
+title: "Lab 7"
+format: pdf
+editor: source
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| include: false
+library(knitr)
+library(tidyverse)
+library(arm)
+library(rstanarm)
+set.seed(10152025)
+```
+
+
+#### Negative Binomial Regression
+
+Use the `make_negbinom()` function to generate data for this lab.
+
+```{r}
+make_negbinom <- function(size = 1, beta0 = 1, beta1 = 1, n = 100){
+  x <- seq(-2, 2, length.out = n)
+  mu <- exp(beta0 + beta1 * x)
+  y <- rnbinom(n, size = size, mu = mu)
+  return(tibble(x = x,
+                y = y))
+}
+
+```
+
+
+#### Question 1: Data Visualization
+
+#### 1.1 (4 points)
+
+Create figure that includes data points and a smoother line to compare data generated from these four settings
+
+1. `make_negbinom(size = .1)`
+2. `make_negbinom(size = 1)`
+3. `make_negbinom(size = 10)`
+4. `make_negbinom(size = 100)`
+
+
+
+#### 1.2 (4 points)
+
+Do these figures match your intuition, why or why not?
+
+#### Question 2: Poisson Model Fitting
+
+Now we will fit a Poisson regression model to the cases where `size = 1` and `size = 100`. 
+
+#### 2.1 (4 points)
+
+Fit the models and discuss how the model parameters match your expectations.
+
+
+
+#### 2.2 (4 points)
+
+Plot the model fits to the data. 
+
+
+
+#### Question 3: Negative Binomial Model Fitting
+
+Now we will fit a Negative Binomial regression model to the cases where `size = 1` and `size = 100`. 
+
+#### 3.1 (4 points)
+
+Fit the models and discuss how the model parameters match your expectations. You can use `glm.nb` from the `MASS` package
+
+
+#### 3.2 (4 points)
+
+Add the model fits to the data. 
+
+
+#### Question 4: Model Comparisons
+
+#### 4.1 (4 points)
+
+Which model do you prefer in the size = 1 case, why?
+
+#### 4.2 (4 points)
+
+Which model do you prefer in the size = 100 case, why? Does it matter?
+
+#### 4.3 (4 points)
+
+Do your figures in question 3 illustrate the differences in uncertainty between Poisson and negative binomial models?
+
