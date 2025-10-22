@@ -1,5 +1,5 @@
 ---
-title: "Lab 8: Key"
+title: "Lab 8"
 format: pdf
 editor: source
 editor_options: 
