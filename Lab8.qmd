@@ -1,0 +1,56 @@
+---
+title: "Lab 8: Key"
+format: pdf
+editor: source
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| include: false
+library(knitr)
+library(tidyverse)
+library(arm)
+library(rstanarm)
+set.seed(10222025)
+```
+
+
+For this lab we will use data from the Capital Bikeshare in Washington, D.C. Our goal is to model the number of bike rentals at 8AM based on season, type of day, and weather conditions.
+
+- season: 1 = winter, 2 = spring, 3 = summer, and 4 = fall
+- workingday: 1 = working day
+- atemp: temperature (includes heat index / windchill) in Celsius
+- humidity: percent humidity
+- windspeed: windspeed in mph
+- count: number of bikes rented during the 8AM hour
+
+
+```{r}
+bikes <- read_csv('https://raw.githubusercontent.com/STAT439/Lab/refs/heads/main/bike_rentals.csv')
+```
+
+
+### 1. EDA (6 points)
+
+Conduct an EDA and summarize which variables seem important for modeling bike rental counts.
+
+### 2. Model Choice (6 points)
+
+Justify the model that you've selected, why is the the best - or at least a good - model?
+
+### 3. Model Summary (6 points)
+
+Use text and figures to describe the model you've fit and how the factors in that model contribute to bike rental predictions.
+
+### 4. Model Prediction (6 points)
+
+Compute prediction intervals for the following scenarios:
+
+- `season = 1`, `workingday = 1`, `atemp = 12.7`, `humidity = 66.4`, `windspeed = 12.4`
+
+- `season = 1`, `workingday = 0`, `atemp = 12.7`, `humidity = 66.4`, `windspeed = 12.4`
+
+- `season = 3`, `workingday = 1`, `atemp = 31.6`, `humidity = 69.2`, `windspeed = 11.7`
+
+- `season = 3`, `workingday = 0`, `atemp = 31.6`, `humidity = 69.2`, `windspeed = 11.7`
