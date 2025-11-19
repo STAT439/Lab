@@ -1,0 +1,114 @@
+---
+title: "Lab 10"
+format: pdf
+editor: source
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| include: false
+library(knitr)
+library(rstanarm)
+library(tidyverse)
+library(DescTools)
+library(lme4)
+library(arm)
+set.seed(11182025)
+```
+
+
+### Part 1: Modeling Matched Pairs Data
+
+Recall the hypothetical matched-pairs dataset we explored during the class activity.
+
+
+```{r}
+#| echo: false
+outcomes <- matrix(c(40, 6, 8, 46), nrow = 2,
+               dimnames = list("Treatment" = c("Better", "Not Better"),
+                               "Placebo" = c("Better", "Not Better")))
+outcomes
+mcnemar.test(outcomes)
+CohenKappa(outcomes)
+
+```
+
+The Cohen's Kappa for this dataset is `r round(CohenKappa(outcomes), 2)`.
+
+We can also think about this dataset in a modeling framework.
+
+```{r}
+#| echo: false
+matched <- tibble(y = c(rep(1, 80), rep(0, 92), rep(c(1,0), 8), rep(c(0,1), 6)),
+       outcome = c(rep('Better', 80), rep('Not Better', 92), rep(c('Better', 'Not Better'), 8), rep(c('Not Better', 'Better'), 6)),
+       x = rep(c('Treatment', 'Placebo'), 100),
+       id = rep(1:100, each = 2))
+```
+
+
+#### Q1. (4 points)
+
+Your goal is to estimate whether there are different success rates between the treatment and placebo. Treat id as a random effect and write out a model framework.
+
+
+
+#### Q2. (4 points)
+
+Fit the model from Q1 and interpret the coefficient associated with `x`. Do the general inferences from this model match what we found from the McNemar's test?
+
+
+### Part 2: Yelp Data
+
+Consider Yelp data collected from six Las Vegas establishments
+
+```{r}
+#| message: false
+vegas_yelp <- read_csv('https://raw.githubusercontent.com/STAT439/Lab/refs/heads/main/vegas_yelp.csv') |>
+  mutate(stars = ordered(stars, levels = c('1','2','3','4','5')),
+         name = case_when(
+           name == "\"StripSteak\"" ~ 'Strip Steak',
+           name == "\"House of Blues - Music Venue\"" ~ 'House of Blues',
+           name == "\"Noodles\"" ~ 'Noodles',
+           name == "\"Burger Bar\"" ~ 'Burger Bar',
+           name == "\"Carnevino\"" ~ 'Carnevino',
+           name == "\"Carmine's Italian Restaurant - Las Vegas\"" ~ "Carmine's Italian"))
+```
+
+
+#### Q3. (4 points)
+
+
+Create a figure that displays the star rankings for the 6 businesses
+
+
+#### Q4. (4 points)
+
+Fit a model for the number of stars for `Burger Bar`. Interpret the coefficients in the model.
+
+
+
+#### Q5. (4 points)
+
+1. What is the probability of a one star rating?
+
+2. What is the probability of a two star or one star rating?
+
+3. What is the probability of a four start rating?
+
+4. What is the probability of a four or five start rating?
+
+#### Q6. (4 points)
+
+Fit a model for all six of the businesses (`stars ~ name`). How do we interpret the coefficients in this model?
+
+_Note that this model has fairly strong assumption that the pattern of stars is consistent across the business. An alternative would be to fit a nominal regression model._
+
+#### Q7. (4 points)
+
+Many of the reviewers in the dataset have multiple reviews. Write out an ordinal regression model that accounts for this correlation as, for example, some reviewers may be more likely to rate all establishments highly.
+
+```{r}
+vegas_yelp |> count(user_id) |> arrange(desc(n)) |> head()
+```
+
