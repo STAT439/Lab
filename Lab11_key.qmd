@@ -1,0 +1,128 @@
+---
+title: "Lab 11: Key"
+format: gfm
+editor: source
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| include: false
+set.seed(11282025)
+library(knitr)
+library(tidyverse)
+library(randomForest)
+library(viridis)
+library(rpart)
+library(rpart.plot)
+library(mnormt)
+library(kernlab)
+
+```
+
+## Spam Dataset
+
+- Consider a dataset consisting of 4601 emails, each of which are classified as `spam` or `not spam`.
+
+- Additionally there are 57 more variables containing information about the emails. More details can be found at [https://archive.ics.uci.edu/dataset/94/spambase](https://archive.ics.uci.edu/dataset/94/spambase).
+
+```{r}
+data(spam)
+glimpse(spam)
+```
+
+
+### 1. Training / Test Set Construction (4 points)
+
+Divide the dataset into a test and training set. We won't be doing much tuning, so a validation set is not necessary in this case.
+
+```{r}
+n_emails <- nrow(spam)
+spam <- spam |> mutate(id = 1:n())
+training <- spam |> 
+  sample_n(floor(.7 * n_emails))
+test <- spam |> 
+  filter(!id %in% training$id) |>
+  select(-id)
+
+training <- training |>
+  select(-id)
+```
+
+### 2. Loss Function (4 points)
+
+Let's assume that you would rather get a spam email in your inbox than have an actual email classified as spam. Define a loss function that accounts for the fact that an actual email falsely
+classified as spam is more troublesome than falsely classifying a spam email as an actual email.
+
+- Predict `spam` and email `spam`: 0 Loss
+
+- Predict `spam` and email `nonspam`: 10 Loss
+
+- Predict `nonspam` and email `spam`: 1 Loss
+
+- Predict `nonspam` and email `nonspam`: 0 Loss
+
+
+### 3. Logistic Regression (4 points)
+
+Fit a logistic regression model on your training dataset and make predictions on the test dataset. Note you might need to round the predicted probability to get a classification decision.
+
+
+```{r}
+training_logistic <- training |> 
+  mutate(type_char = case_when(
+    type == 'spam' ~ 1,
+    type == 'nonspam' ~ 0
+  )) |>
+  select(-type)
+
+logistic_regression <- glm(type_char ~ ., data = training_logistic, family = binomial)
+test_logistic <- test |> 
+  mutate(type_char = case_when(
+    type == 'spam' ~ 1,
+    type == 'nonspam' ~ 0),
+    preds = round(predict(logistic_regression, newdata = test, type = 'response')))
+```
+
+
+### 4. Random Forest (4 points)
+
+Fit a logistic regression model on your training dataset and make predictions on the test dataset. Note you might need to round the predicted probability to get a classification decision.
+
+```{r}
+rf_model <- randomForest(type ~ ., data = training, type = 'classification')
+test_rf <- test |> 
+  mutate(type_char = case_when(
+    type == 'spam' ~ 1,
+    type == 'nonspam' ~ 0),
+    preds = predict(rf_model, newdata = test, type = 'response'))
+```
+
+
+### 5. Model Comparison (4 points)
+
+Using your loss function constructed above, compare the average loss on the test dataset for both the logistic regression and random forest models. Which model do you prefer?
+
+```{r}
+test_logistic |>
+  mutate(loss = case_when(
+    type_char == preds ~ 0,
+    type_char == 1 & preds == 0 ~ 1, # spam, predict nonspam
+    type_char == 0 & preds == 1 ~ 10 #nonspam, predict spam
+  )) |>
+  summarize(mean(loss))
+
+
+test_rf |>
+  mutate(loss = case_when(
+    type == preds ~ 0,
+    type == 'spam' & preds == 'nonspam' ~ 1, # spam, predict nonspam
+    type == 'nonspam' & preds == 'spam' ~ 10 #nonspam, predict spam
+  )) |>
+  summarize(mean(loss))
+
+```
+
+### 6. Model Summary 
+
+While classification approaches are not generally well suited for asking inferential questions. It is possible to make predictions for specific sets of covariates. Given that there are more than 50 covariates in this case, we will skip this for the lab.
